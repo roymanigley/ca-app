@@ -1,5 +1,6 @@
 from django.conf import settings
 from OpenSSL import crypto
+import hashlib
 
 
 class SigningService:
@@ -46,7 +47,14 @@ class SigningService:
         cert.sign(ca_key, "sha256")
 
         # Serialize the private key and certificate to memory
-        key_pem = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
+        salted = hashlib.sha512(
+            ca_password.encode('utf-8')
+        ).hexdigest() + domain
+        passphrase = hashlib.sha512(salted.encode('utf-8')).hexdigest()
+
+        key_pem = crypto.dump_privatekey(
+            crypto.FILETYPE_PEM, key, passphrase=passphrase.encode('utf-8')
+        )
         cert_pem = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
 
         return cert_pem, key_pem

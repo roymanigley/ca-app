@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import SignedCertSerializer
-from .serives import SigningService
+from .services import SigningService
 import io
 import zipfile
 

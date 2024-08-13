@@ -15,8 +15,8 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CA_PEM_PATH = BASE_DIR / 'poc/CA.pem'
-CA_KEY_PATH = BASE_DIR / 'poc/CA.key'
+CA_PEM_PATH = os.getenv('CA_PEM_PATH', BASE_DIR / 'poc/CA.pem')
+CA_KEY_PATH = os.getenv('CA_KEY_PATH', BASE_DIR / 'poc/CA.key')
 
 CA_COUNTRY = os.getenv('CA_COUNTRY', 'CH')
 CA_STATE = os.getenv('CA_STATE', 'Switzerland')
