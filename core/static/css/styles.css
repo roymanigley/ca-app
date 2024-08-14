@@ -1,0 +1,17 @@
+.errorlist {
+	text-align: center;
+	color: crimson;
+	font-family: monospace;
+	font-weight: bold;
+	font-size: 1.5em;
+}
+
+blockquote {
+	border-left-color: #009688 !important;
+}
+
+code {
+    background: #009688;
+    color: white;
+    font-weight: bold;
+}

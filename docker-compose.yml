@@ -1,0 +1,27 @@
+services:
+  ca-app:
+    build: .
+    volumes:
+      - ca-app-static-files:/var/data/ca-app/static
+      - ca-app-media-files:/var/data/ca-app/media
+      - ca-app-db-files:/var/data/ca-app/db
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # - ./nginx/keys/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      - ./nginx/server.local.key:/etc/ssl/private/server.key:ro
+      - ./nginx/server.local.crt:/etc/ssl/certs/server.crt:ro
+      - ca-app-static-files:/app/static:ro
+      - ca-app-media-files:/app/media:ro
+    depends_on:
+      - ca-app
+
+volumes:
+  ca-app-static-files:
+  ca-app-media-files:
+  ca-app-db-files:

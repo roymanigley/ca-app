@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import CaPemView, SignedCertCreateView
+from .views import SignedCertView, get_ca
 
 urlpatterns = [
-    path('ca.crt', CaPemView.as_view()),
-    path('certificate/signed', SignedCertCreateView.as_view()),
+    path('', SignedCertView.as_view()),
+    path('CA.crt', get_ca)
 ]

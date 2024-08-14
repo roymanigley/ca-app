@@ -1,56 +1,67 @@
-from django.conf import settings
+from django.views.generic import FormView
+from django import forms
 from django.http.response import HttpResponse
-from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .serializers import SignedCertSerializer
-from .services import SigningService
+from django.http.request import HttpRequest
+from core.services import SigningService
 import io
 import zipfile
+from django.core.exceptions import FieldError
+from django.conf import settings
+from OpenSSL import crypto
 
 
-class CaPemView(APIView):
-
-    def get(self, request: Request) -> Response:
-        with open(settings.CA_PEM_PATH) as f:
-            return Response(
-                data=f.read(),
-                status=status.HTTP_200_OK,
-                content_type='octet/stream'
-            )
+class SignedCertForm(forms.Form):
+    domain = forms.CharField()
+    ca_password = forms.CharField(
+        widget=forms.PasswordInput(), label='Password'
+    )
 
 
-class SignedCertCreateView(APIView):
+def get_ca(request: HttpRequest) -> HttpResponse:
+    with open(settings.CA_PEM_PATH) as f:
+        response = HttpResponse(
+            f.read(),
+            content_type='application/octet-stream'
+        )
+        response['Content-Disposition'] = 'attachment; filename="CA.crt"'
+        return response
+
+
+class SignedCertView(FormView):
+
+    template_name = 'sign-cert.html'
+    form_class = SignedCertForm
+    success_url = '/'
 
     signing_service = SigningService()
-    serializer_class = SignedCertSerializer
 
-    def post(self, request: Request) -> Response:
+    def form_valid(self, form: SignedCertForm) -> HttpResponse:
+        ca_password = form.cleaned_data['ca_password']
+        domain = form.cleaned_data['domain']
 
-        serializer = SignedCertSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
+        try:
+            cert_pem, key_pem = self.signing_service.create_signed_cert_and_key(
+                ca_password=ca_password,
+                domain=domain
+            )
 
-        ca_password = data['ca_password']
-        domain = data['domain']
+            in_memory_zip = io.BytesIO()
+            with zipfile.ZipFile(
+                in_memory_zip, mode="w", compression=zipfile.ZIP_DEFLATED
+            ) as zf:
+                zf.writestr(f"{domain}.key", key_pem)
+                zf.writestr(f"{domain}.crt", cert_pem)
+            in_memory_zip.seek(0)
 
-        cert_pem, key_pem = self.signing_service.create_signed_cert_and_key(
-            ca_password=ca_password,
-            domain=domain
-        )
+            response = HttpResponse(
+                in_memory_zip, content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename="{domain}.zip"'
 
-        in_memory_zip = io.BytesIO()
-        with zipfile.ZipFile(
-            in_memory_zip, mode="w", compression=zipfile.ZIP_DEFLATED
-        ) as zf:
-            zf.writestr(f"{domain}.key", key_pem)
-            zf.writestr(f"{domain}.crt", cert_pem)
-
-        # Seek to the beginning of the BytesIO buffer
-        in_memory_zip.seek(0)
-
-        response = HttpResponse(in_memory_zip, content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="{data["domain"]}.zip"'
-
-        return response
+            return response
+        except crypto.Error as e:
+            print(e)
+            form.add_error(None, FieldError('invalid password'))
+        except Exception as e:
+            print(e)
+            form.add_error(None, e)
+        return self.form_invalid(form)

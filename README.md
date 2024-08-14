@@ -3,6 +3,6 @@
 
 ## Endpoints
 
-- `GET` [/api/ca.crt](http://localhost:8000/api/ca.crt)
-- `POST` [/api/certificate/signed](http://localhost:8000/api/certificate/signed)
+- `download CA.crt` [/ca.crt](http://localhost:8000/ca.crt)
+- `generate the signed certificate` [/](http://localhost:8000/)
 
