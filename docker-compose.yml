@@ -1,6 +1,9 @@
 services:
   ca-app:
     build: .
+    environment:
+      DJANGO_TRUSTED_ORIGINS: 'https://127.0.0.1:8443,https://localhost:8443,https://server.local:8443'
+      DJANGO_ALLOWED_HOSTS: 'localhost,127.0.0.1,server.local'
     volumes:
       - ca-app-static-files:/var/data/ca-app/static
       - ca-app-media-files:/var/data/ca-app/media

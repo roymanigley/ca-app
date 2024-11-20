@@ -26,6 +26,7 @@ RUN chown app-user:app-group ${DJANGO_LOGGING_DIR} -R
 RUN chown app-user:app-group ${DJANGO_DB_DIR} -R
 RUN chown app-user:app-group ${DJANGO_STATIC_DIR} -R
 RUN chown app-user:app-group ${DJANGO_MEDIA_DIR} -R
+RUN chown app-user:app-group /opt/app/poc/CA.key -R
 
 USER app-user
 

@@ -35,12 +35,12 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DJANGO_DEBUG', 'true').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv(
-    'DJANGO_ALLOWED_HOSTS', 'localhost 127.0.0.1 server.local'
-).split(' ')
+    'DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,server.local'
+).split(',')
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
-    'DJANGO_TRUSTED_ORIGINS', 'http://localhost:8000 http://127.0.0.1:8000'
-).split(' ')
+    'DJANGO_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000'
+).split(',')
 
 # Application definition
 
